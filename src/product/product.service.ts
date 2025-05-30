@@ -6,23 +6,28 @@ import { Product, UpdateProduct } from './product.dto';
 export class ProductService {
   constructor(private prisma: PrismaService) {}
 
-  create(data: Product) {
-    return this.prisma.product.create({ data });
+  async create(data: Product) {
+    const product = await this.prisma.product.create({ data });
+    return product;
   }
 
-  findAll() {
-    return this.prisma.product.findMany();
+  async findAll() {
+    const products = await this.prisma.product.findMany();
+    return products;
   }
 
-  findById(id: string) {
-    return this.prisma.product.findUnique({ where: { id } });
+  async findById(id: string) {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+    return product;
   }
 
-  update(id: string, data: UpdateProduct) {
-    return this.prisma.product.update({ where: { id }, data });
+  async update(id: string, data: UpdateProduct) {
+    const product = await this.prisma.product.update({ where: { id }, data });
+    return product;
   }
 
-  delete(id: string) {
-    return this.prisma.product.delete({ where: { id } });
+  async delete(id: string) {
+    const product = await this.prisma.product.delete({ where: { id } });
+    return product;
   }
 }
