@@ -6,10 +6,14 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { Role } from '@prisma/client';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from './public.decorator';
 
 interface JwtPayload {
-  id: string;
+  sub: string;
   email: string;
+  role: Role;
 }
 
 declare module 'express' {
@@ -20,11 +24,27 @@ declare module 'express' {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest<Request>();
+    console.log('Auth guard - Headers:', request.headers);
+
     const token = this.extractTokenFromHeader(request);
+    console.log('Auth guard - Token:', token);
+
     if (!token) {
       throw new UnauthorizedException('Token não fornecido');
     }
@@ -32,8 +52,10 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: process.env.JWT_SECRET,
       });
+      console.log('Auth guard - Decoded payload:', payload);
       request.user = payload;
-    } catch {
+    } catch (error) {
+      console.error('Auth guard - Token verification error:', error);
       throw new UnauthorizedException('Token inválido ou expirado');
     }
     return true;

@@ -10,12 +10,16 @@ import {
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Product, UpdateProduct } from './product.dto';
+import { Roles } from 'src/roles/role.decorator';
+import { Role } from '@prisma/client';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @Roles(Role.ADMIN)
   async create(@Body() data: Product) {
     const product = await this.productService.create(data);
 
@@ -26,6 +30,7 @@ export class ProductController {
   }
 
   @Get()
+  @Public()
   async findAll() {
     const products = await this.productService.findAll();
 
@@ -37,6 +42,7 @@ export class ProductController {
   }
 
   @Get(':id')
+  @Public()
   async findById(@Param('id') id: string) {
     const product = await this.productService.findById(id);
 
@@ -48,6 +54,7 @@ export class ProductController {
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN)
   async update(@Param('id') id: string, @Body() data: UpdateProduct) {
     const productExists = await this.productService.findById(id);
 
@@ -64,6 +71,7 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)
   async delete(@Param('id') id: string) {
     const productExists = await this.productService.findById(id);
 

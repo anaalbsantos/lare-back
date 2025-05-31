@@ -9,18 +9,20 @@ import {
   NotFoundException,
   BadRequestException,
   HttpException,
-  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User, UpdateUser } from './user.dto';
 import * as bcryptjs from 'bcryptjs';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { Public } from 'src/auth/public.decorator';
+import { Role } from '@prisma/client';
+import { Roles } from 'src/roles/role.decorator';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
+  @Public()
   async create(@Body() data: User) {
     const userExists = await this.userService.findByEmail(data.email);
     if (userExists) {
@@ -43,6 +45,7 @@ export class UserController {
   }
 
   @Get()
+  @Roles(Role.ADMIN)
   async findAll() {
     const users = await this.userService.findAll();
 
@@ -54,6 +57,7 @@ export class UserController {
   }
 
   @Get(':id')
+  @Public()
   async findById(@Param('id') id: string) {
     const user = await this.userService.findById(id);
 
@@ -64,8 +68,8 @@ export class UserController {
     return user;
   }
 
-  @UseGuards(AuthGuard)
   @Patch(':id')
+  @Public()
   async update(@Param('id') id: string, @Body() data: UpdateUser) {
     const user = await this.userService.findById(id);
 
@@ -89,8 +93,8 @@ export class UserController {
     return updatedUser;
   }
 
-  @UseGuards(AuthGuard)
   @Delete(':id')
+  @Public()
   async delete(@Param('id') id: string) {
     const user = await this.userService.delete(id);
 
