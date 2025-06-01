@@ -25,6 +25,11 @@ export class Product {
   @IsNumber({}, { message: 'Price must be a number' })
   @Min(0, { message: 'Price must be greater than 0' })
   price: number;
+
+  @IsOptional()
+  @IsNumber({}, { message: 'Stock must be a number' })
+  @Min(0, { message: 'Stock must be greater than 0' })
+  stock?: number;
 }
 
 export class UpdateProduct extends PartialType(Product) {}

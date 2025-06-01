@@ -1,0 +1,198 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  NotFoundException,
+  BadRequestException,
+  Patch,
+} from '@nestjs/common';
+import { CartService } from './cart.service';
+import { UserService } from 'src/user/user.service';
+import { ProductService } from 'src/product/product.service';
+import { CartItem } from './cartItem.dto';
+
+@Controller('cart')
+export class CartController {
+  constructor(
+    private readonly cartService: CartService,
+    private readonly userService: UserService,
+    private readonly productService: ProductService,
+  ) {}
+
+  @Get(':userId')
+  async findCurrentCartFromUser(@Param('userId') userId: string) {
+    const user = await this.userService.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const cart = await this.cartService.findCurrentCartFromUser(userId);
+
+    if (!cart) {
+      throw new NotFoundException('Cart not found');
+    }
+
+    return cart;
+  }
+
+  @Post(':userId/:productId')
+  async addProductToCart(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+    @Body() data: CartItem,
+  ) {
+    // Validations
+    const user = await this.userService.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const cart = await this.cartService.findCurrentCartFromUser(userId);
+
+    if (!cart) {
+      throw new NotFoundException('Cart not found');
+    }
+
+    const product = await this.productService.findById(productId);
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    // Check if has stock
+    if (product.stock < data.quantity) {
+      throw new BadRequestException('Insufficient stock');
+    }
+
+    // Update product stock
+    await this.productService.update(productId, {
+      stock: product.stock - data.quantity,
+    });
+
+    // Check if product is already in cart
+    const productInCart = await this.cartService.findProductInCart(
+      cart.id,
+      productId,
+    );
+
+    if (productInCart) {
+      // Update cart item quantity
+      await this.cartService.updateCartItem(productInCart.id, {
+        quantity: productInCart.quantity + data.quantity,
+      });
+    } else {
+      // Add product to cart
+      await this.cartService.createCartItem({
+        cart: {
+          connect: {
+            id: cart.id,
+          },
+        },
+        product: {
+          connect: {
+            id: productId,
+          },
+        },
+        quantity: data.quantity,
+      });
+    }
+
+    // Update cart total price
+    const totalPrice = cart.total + product.price * data.quantity;
+    await this.cartService.updateCart(cart.id, {
+      total: totalPrice,
+    });
+
+    return {
+      message: 'Product added to cart',
+    };
+  }
+
+  @Delete(':userId/:productId')
+  async removeProductFromCart(
+    @Param('userId') userId: string,
+    @Param('productId') productId: string,
+  ) {
+    // Validations
+    const user = await this.userService.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const cart = await this.cartService.findCurrentCartFromUser(userId);
+
+    if (!cart) {
+      throw new NotFoundException('Cart not found');
+    }
+
+    const product = await this.productService.findById(productId);
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    // Check if product is in cart
+    const productInCart = await this.cartService.findProductInCart(
+      cart.id,
+      productId,
+    );
+
+    if (!productInCart) {
+      throw new NotFoundException('Product not found in cart');
+    }
+
+    // Update product stock
+    await this.productService.update(productId, {
+      stock: product.stock + productInCart.quantity,
+    });
+
+    // Delete cart item
+    await this.cartService.deleteCartItem(productInCart.id);
+
+    // Update cart total price
+    const totalPrice = cart.total - product.price * productInCart.quantity;
+    await this.cartService.updateCart(cart.id, {
+      total: totalPrice,
+    });
+
+    return {
+      message: 'Product removed from cart',
+    };
+  }
+
+  @Patch(':id')
+  async checkout(@Param('id') id: string) {
+    const cart = await this.cartService.findById(id);
+
+    if (!cart) {
+      throw new NotFoundException('Cart not found');
+    }
+
+    // Check if cart is pending
+    if (cart.status !== 'PENDING') {
+      throw new BadRequestException('Cart is not pending');
+    }
+    // Update cart status to PAID
+    await this.cartService.updateCart(id, {
+      status: 'PAID',
+    });
+    // Reset cart (create a new pending cart)
+    await this.cartService.createCart({
+      user: {
+        connect: {
+          id: cart.userId,
+        },
+      },
+    });
+
+    return {
+      message: 'Cart checked out',
+    };
+  }
+}

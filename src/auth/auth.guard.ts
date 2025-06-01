@@ -40,10 +40,8 @@ export class AuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<Request>();
-    console.log('Auth guard - Headers:', request.headers);
 
     const token = this.extractTokenFromHeader(request);
-    console.log('Auth guard - Token:', token);
 
     if (!token) {
       throw new UnauthorizedException('Token não fornecido');
@@ -52,10 +50,8 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync<JwtPayload>(token, {
         secret: process.env.JWT_SECRET,
       });
-      console.log('Auth guard - Decoded payload:', payload);
       request.user = payload;
-    } catch (error) {
-      console.error('Auth guard - Token verification error:', error);
+    } catch {
       throw new UnauthorizedException('Token inválido ou expirado');
     }
     return true;

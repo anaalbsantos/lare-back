@@ -16,10 +16,14 @@ import * as bcryptjs from 'bcryptjs';
 import { Public } from 'src/auth/public.decorator';
 import { Role } from '@prisma/client';
 import { Roles } from 'src/roles/role.decorator';
+import { CartService } from 'src/cart/cart.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly cartService: CartService,
+  ) {}
 
   @Post()
   @Public()
@@ -37,6 +41,15 @@ export class UserController {
     };
 
     const user = await this.userService.create(userWithHashedPassword);
+
+    // Inicializa o carrinho do usuário
+    await this.cartService.createCart({
+      user: {
+        connect: {
+          id: user.id,
+        },
+      },
+    });
 
     return {
       message: 'User created successfully',
@@ -57,7 +70,6 @@ export class UserController {
   }
 
   @Get(':id')
-  @Public()
   async findById(@Param('id') id: string) {
     const user = await this.userService.findById(id);
 
@@ -69,7 +81,6 @@ export class UserController {
   }
 
   @Patch(':id')
-  @Public()
   async update(@Param('id') id: string, @Body() data: UpdateUser) {
     const user = await this.userService.findById(id);
 
@@ -94,7 +105,6 @@ export class UserController {
   }
 
   @Delete(':id')
-  @Public()
   async delete(@Param('id') id: string) {
     const user = await this.userService.delete(id);
 

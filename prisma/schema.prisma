@@ -16,6 +16,7 @@ model User {
   password  String
   createdAt DateTime @default(now()) @map("created_at")
   role      Role     @default(CUSTOMER)
+  cart      Cart[]
 
   @@map("users")
 }
@@ -30,6 +31,40 @@ model Product {
   title       String
   description String?
   price       Float
+  stock       Int      @default(0)
+  cartItems   CartItem[]
 
   @@map("products")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id])
+
+  @@unique([cartId, productId]) // Forbid duplicate cart items
+
+  @@map("cart_items")
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  cartItems CartItem[]
+  status    CartStatus @default(PENDING)
+  total     Float      @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("carts")
+}
+
+enum CartStatus {
+  PENDING
+  PAID
 }

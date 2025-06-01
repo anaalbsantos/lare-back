@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/auth.guard';
 import { RoleGuard } from './roles/role.guard';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RoleGuard } from './roles/role.guard';
     ProductModule,
     AuthModule,
     UserModule,
+    CartModule,
   ],
   controllers: [AppController],
   providers: [
