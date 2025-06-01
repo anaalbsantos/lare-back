@@ -8,7 +8,6 @@ import {
   Delete,
   NotFoundException,
   BadRequestException,
-  HttpException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User, UpdateUser } from './user.dto';
@@ -17,7 +16,20 @@ import { Public } from 'src/auth/public.decorator';
 import { Role } from '@prisma/client';
 import { Roles } from 'src/roles/role.decorator';
 import { CartService } from 'src/cart/cart.service';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiParam,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { ParamId, UnauthorizedResponse, UserSwagger } from 'src/utils/swagger';
 
+@ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(
@@ -27,10 +39,13 @@ export class UserController {
 
   @Post()
   @Public()
+  @ApiBody(UserSwagger.create.body)
+  @ApiCreatedResponse(UserSwagger.create.response.created)
+  @ApiBadRequestResponse(UserSwagger.create.badRequest)
   async create(@Body() data: User) {
     const userExists = await this.userService.findByEmail(data.email);
     if (userExists) {
-      throw new HttpException('Este email já está em uso', 400);
+      throw new BadRequestException('Email already in use');
     }
 
     const hashedPassword = await bcryptjs.hash(data.password, 6);
@@ -59,39 +74,61 @@ export class UserController {
 
   @Get()
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOkResponse(UserSwagger.findAll.response.ok)
+  @ApiNotFoundResponse(UserSwagger.findAll.response.notFound)
+  @ApiUnauthorizedResponse(UnauthorizedResponse)
   async findAll() {
     const users = await this.userService.findAll();
 
     if (!users) {
-      throw new NotFoundException('Nenhum usuário encontrado');
+      throw new NotFoundException('No users found');
     }
 
-    return users;
+    return {
+      message: 'Users found successfully!',
+      users,
+    };
   }
 
   @Get(':id')
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'User ID', ...ParamId })
+  @ApiOkResponse(UserSwagger.findById.response.ok)
+  @ApiNotFoundResponse(UserSwagger.findById.response.notFound)
+  @ApiUnauthorizedResponse(UnauthorizedResponse)
   async findById(@Param('id') id: string) {
     const user = await this.userService.findById(id);
 
     if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new NotFoundException('User not found');
     }
 
-    return user;
+    return {
+      message: 'User found successfully!',
+      user,
+    };
   }
 
   @Patch(':id')
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'User ID', ...ParamId })
+  @ApiBody(UserSwagger.update.body)
+  @ApiOkResponse(UserSwagger.update.response.ok)
+  @ApiNotFoundResponse(UserSwagger.update.response.notFound)
+  @ApiBadRequestResponse(UserSwagger.update.response.badRequest)
+  @ApiUnauthorizedResponse(UnauthorizedResponse)
   async update(@Param('id') id: string, @Body() data: UpdateUser) {
     const user = await this.userService.findById(id);
 
     if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new NotFoundException('User not found');
     }
 
     if (data.email) {
       const userExists = await this.userService.findByEmail(data.email);
       if (userExists) {
-        throw new BadRequestException('Este email já está em uso');
+        throw new BadRequestException('Email already in use');
       }
     }
 
@@ -105,13 +142,21 @@ export class UserController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'User ID', ...ParamId })
+  @ApiOkResponse(UserSwagger.delete.response.ok)
+  @ApiNotFoundResponse(UserSwagger.delete.response.notFound)
+  @ApiUnauthorizedResponse(UnauthorizedResponse)
   async delete(@Param('id') id: string) {
     const user = await this.userService.delete(id);
 
     if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new NotFoundException('User not found');
     }
 
-    return user;
+    return {
+      message: 'User deleted successfully!',
+      user,
+    };
   }
 }

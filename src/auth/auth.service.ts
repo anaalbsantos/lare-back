@@ -17,12 +17,12 @@ export class AuthService {
   async signIn(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new NotFoundException('User not found');
     }
 
     const isPasswordValid = await bcryptjs.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Senha inválida');
+      throw new UnauthorizedException('Invalid password');
     }
 
     const payload = {
@@ -32,6 +32,7 @@ export class AuthService {
     };
 
     return {
+      message: 'User signed in successfully!',
       access_token: await this.jwtService.signAsync(payload),
       user: {
         id: user.id,

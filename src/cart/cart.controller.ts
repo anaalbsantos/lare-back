@@ -7,13 +7,25 @@ import {
   Delete,
   NotFoundException,
   BadRequestException,
-  Patch,
 } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { UserService } from 'src/user/user.service';
 import { ProductService } from 'src/product/product.service';
 import { CartItem } from './cartItem.dto';
+import { CartSwagger, UnauthorizedResponse, ParamId } from 'src/utils/swagger';
+import {
+  ApiBody,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiParam,
+  ApiTags,
+  ApiUnauthorizedResponse,
+  ApiBearerAuth,
+  ApiBadRequestResponse,
+} from '@nestjs/swagger';
 
+@ApiTags('Cart')
+@ApiBearerAuth()
 @Controller('cart')
 export class CartController {
   constructor(
@@ -23,6 +35,10 @@ export class CartController {
   ) {}
 
   @Get(':userId')
+  @ApiParam({ name: 'userId', description: 'User ID', ...ParamId })
+  @ApiOkResponse(CartSwagger.findCart.response.ok)
+  @ApiNotFoundResponse(CartSwagger.findCart.response.notFound)
+  @ApiUnauthorizedResponse(UnauthorizedResponse)
   async findCurrentCartFromUser(@Param('userId') userId: string) {
     const user = await this.userService.findById(userId);
 
@@ -40,6 +56,12 @@ export class CartController {
   }
 
   @Post(':userId/:productId')
+  @ApiParam({ name: 'userId', description: 'User ID', ...ParamId })
+  @ApiParam({ name: 'productId', description: 'Product ID', ...ParamId })
+  @ApiBody(CartSwagger.addProductToCart.body)
+  @ApiOkResponse(CartSwagger.addProductToCart.response.ok)
+  @ApiNotFoundResponse(CartSwagger.addProductToCart.response.notFound)
+  @ApiUnauthorizedResponse(UnauthorizedResponse)
   async addProductToCart(
     @Param('userId') userId: string,
     @Param('productId') productId: string,
@@ -114,6 +136,11 @@ export class CartController {
   }
 
   @Delete(':userId/:productId')
+  @ApiParam({ name: 'userId', description: 'User ID', ...ParamId })
+  @ApiParam({ name: 'productId', description: 'Product ID', ...ParamId })
+  @ApiOkResponse(CartSwagger.removeProductFromCart.response.ok)
+  @ApiNotFoundResponse(CartSwagger.removeProductFromCart.response.notFound)
+  @ApiUnauthorizedResponse(UnauthorizedResponse)
   async removeProductFromCart(
     @Param('userId') userId: string,
     @Param('productId') productId: string,
@@ -166,7 +193,12 @@ export class CartController {
     };
   }
 
-  @Patch(':id')
+  @Post(':id/checkout')
+  @ApiParam({ name: 'id', description: 'Cart ID', ...ParamId })
+  @ApiOkResponse(CartSwagger.checkout.response.ok)
+  @ApiNotFoundResponse(CartSwagger.checkout.response.notFound)
+  @ApiBadRequestResponse(CartSwagger.checkout.response.badRequest)
+  @ApiUnauthorizedResponse(UnauthorizedResponse)
   async checkout(@Param('id') id: string) {
     const cart = await this.cartService.findById(id);
 
