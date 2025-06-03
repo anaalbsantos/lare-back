@@ -1,4 +1,4 @@
-# [Logo da Larê](./lare-logo.svg) Larê - Back
+# ![Logo da Larê](./lare-logo.svg) Larê - Back
 
 Esse repositório é destinado à construção da API em NestJS para o e-commerce Larê. Ela fornece rotas para gerenciar produtos, usuários, carrinhos e pedidos.
 
