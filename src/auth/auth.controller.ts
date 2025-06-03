@@ -5,6 +5,7 @@ import {
   ApiBody,
   ApiCreatedResponse,
   ApiNotFoundResponse,
+  ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
@@ -18,10 +19,14 @@ export class AuthController {
     schema: {
       type: 'object',
       example: {
-        email: 'test@test.com',
-        password: '123456',
+        email: 'admin@email.com',
+        password: 'admin123#',
       },
     },
+  })
+  @ApiOperation({
+    summary: 'Sign in',
+    description: 'Sign in. This route is public.',
   })
   @ApiCreatedResponse({
     description: 'User signed in successfully!',

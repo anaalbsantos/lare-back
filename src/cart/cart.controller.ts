@@ -22,6 +22,7 @@ import {
   ApiUnauthorizedResponse,
   ApiBearerAuth,
   ApiBadRequestResponse,
+  ApiOperation,
 } from '@nestjs/swagger';
 
 @ApiTags('Cart')
@@ -36,6 +37,7 @@ export class CartController {
 
   @Get(':userId')
   @ApiParam({ name: 'userId', description: 'User ID', ...ParamId })
+  @ApiOperation(CartSwagger.findCart.operation)
   @ApiOkResponse(CartSwagger.findCart.response.ok)
   @ApiNotFoundResponse(CartSwagger.findCart.response.notFound)
   @ApiUnauthorizedResponse(UnauthorizedResponse)
@@ -55,10 +57,11 @@ export class CartController {
     return cart;
   }
 
-  @Post(':userId/:productId')
+  @Post(':userId/:productId/add-product')
   @ApiParam({ name: 'userId', description: 'User ID', ...ParamId })
   @ApiParam({ name: 'productId', description: 'Product ID', ...ParamId })
   @ApiBody(CartSwagger.addProductToCart.body)
+  @ApiOperation(CartSwagger.addProductToCart.operation)
   @ApiOkResponse(CartSwagger.addProductToCart.response.ok)
   @ApiNotFoundResponse(CartSwagger.addProductToCart.response.notFound)
   @ApiUnauthorizedResponse(UnauthorizedResponse)
@@ -102,14 +105,16 @@ export class CartController {
       productId,
     );
 
+    let cartItem: CartItem;
+
     if (productInCart) {
       // Update cart item quantity
-      await this.cartService.updateCartItem(productInCart.id, {
+      cartItem = await this.cartService.updateCartItem(productInCart.id, {
         quantity: productInCart.quantity + data.quantity,
       });
     } else {
       // Add product to cart
-      await this.cartService.createCartItem({
+      cartItem = await this.cartService.createCartItem({
         cart: {
           connect: {
             id: cart.id,
@@ -132,12 +137,14 @@ export class CartController {
 
     return {
       message: 'Product added to cart',
+      cartItem,
     };
   }
 
   @Delete(':userId/:productId')
   @ApiParam({ name: 'userId', description: 'User ID', ...ParamId })
   @ApiParam({ name: 'productId', description: 'Product ID', ...ParamId })
+  @ApiOperation(CartSwagger.removeProductFromCart.operation)
   @ApiOkResponse(CartSwagger.removeProductFromCart.response.ok)
   @ApiNotFoundResponse(CartSwagger.removeProductFromCart.response.notFound)
   @ApiUnauthorizedResponse(UnauthorizedResponse)
@@ -195,6 +202,7 @@ export class CartController {
 
   @Post(':id/checkout')
   @ApiParam({ name: 'id', description: 'Cart ID', ...ParamId })
+  @ApiOperation(CartSwagger.checkout.operation)
   @ApiOkResponse(CartSwagger.checkout.response.ok)
   @ApiNotFoundResponse(CartSwagger.checkout.response.notFound)
   @ApiBadRequestResponse(CartSwagger.checkout.response.badRequest)

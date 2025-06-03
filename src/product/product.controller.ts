@@ -17,8 +17,10 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiParam,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -38,7 +40,9 @@ export class ProductController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiBody(ProductSwagger.create.body)
+  @ApiOperation(ProductSwagger.create.operation)
   @ApiCreatedResponse(ProductSwagger.create.response.created)
+  @ApiBadRequestResponse(ProductSwagger.create.response.badRequest)
   @ApiUnauthorizedResponse(UnauthorizedResponse)
   async create(@Body() data: Product) {
     const product = await this.productService.create(data);
@@ -51,6 +55,7 @@ export class ProductController {
 
   @Get()
   @Public()
+  @ApiOperation(ProductSwagger.findAll.operation)
   @ApiOkResponse(ProductSwagger.findAll.response.ok)
   @ApiNotFoundResponse(ProductSwagger.findAll.response.notFound)
   async findAll() {
@@ -69,6 +74,7 @@ export class ProductController {
   @Get(':id')
   @Public()
   @ApiParam({ name: 'id', description: 'Product ID', ...ParamId })
+  @ApiOperation(ProductSwagger.findById.operation)
   @ApiOkResponse(ProductSwagger.findById.response.ok)
   @ApiNotFoundResponse(ProductSwagger.findById.response.notFound)
   async findById(@Param('id') id: string) {
@@ -89,6 +95,7 @@ export class ProductController {
   @ApiBearerAuth()
   @ApiParam({ name: 'id', description: 'Product ID', ...ParamId })
   @ApiBody(ProductSwagger.update.body)
+  @ApiOperation(ProductSwagger.update.operation)
   @ApiOkResponse(ProductSwagger.update.response.ok)
   @ApiNotFoundResponse(ProductSwagger.update.response.notFound)
   @ApiUnauthorizedResponse(UnauthorizedResponse)
@@ -111,6 +118,7 @@ export class ProductController {
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiParam({ name: 'id', description: 'Product ID', ...ParamId })
+  @ApiOperation(ProductSwagger.delete.operation)
   @ApiOkResponse(ProductSwagger.delete.response.ok)
   @ApiNotFoundResponse(ProductSwagger.delete.response.notFound)
   @ApiUnauthorizedResponse(UnauthorizedResponse)

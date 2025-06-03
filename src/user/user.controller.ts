@@ -23,6 +23,7 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiParam,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -40,6 +41,7 @@ export class UserController {
   @Post()
   @Public()
   @ApiBody(UserSwagger.create.body)
+  @ApiOperation(UserSwagger.create.operation)
   @ApiCreatedResponse(UserSwagger.create.response.created)
   @ApiBadRequestResponse(UserSwagger.create.badRequest)
   async create(@Body() data: User) {
@@ -57,7 +59,7 @@ export class UserController {
 
     const user = await this.userService.create(userWithHashedPassword);
 
-    // Inicializa o carrinho do usuário
+    // Create cart for user
     await this.cartService.createCart({
       user: {
         connect: {
@@ -75,6 +77,7 @@ export class UserController {
   @Get()
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
+  @ApiOperation(UserSwagger.findAll.operation)
   @ApiOkResponse(UserSwagger.findAll.response.ok)
   @ApiNotFoundResponse(UserSwagger.findAll.response.notFound)
   @ApiUnauthorizedResponse(UnauthorizedResponse)
@@ -94,6 +97,7 @@ export class UserController {
   @Get(':id')
   @ApiBearerAuth()
   @ApiParam({ name: 'id', description: 'User ID', ...ParamId })
+  @ApiOperation(UserSwagger.findById.operation)
   @ApiOkResponse(UserSwagger.findById.response.ok)
   @ApiNotFoundResponse(UserSwagger.findById.response.notFound)
   @ApiUnauthorizedResponse(UnauthorizedResponse)
@@ -114,6 +118,7 @@ export class UserController {
   @ApiBearerAuth()
   @ApiParam({ name: 'id', description: 'User ID', ...ParamId })
   @ApiBody(UserSwagger.update.body)
+  @ApiOperation(UserSwagger.update.operation)
   @ApiOkResponse(UserSwagger.update.response.ok)
   @ApiNotFoundResponse(UserSwagger.update.response.notFound)
   @ApiBadRequestResponse(UserSwagger.update.response.badRequest)
@@ -144,6 +149,7 @@ export class UserController {
   @Delete(':id')
   @ApiBearerAuth()
   @ApiParam({ name: 'id', description: 'User ID', ...ParamId })
+  @ApiOperation(UserSwagger.delete.operation)
   @ApiOkResponse(UserSwagger.delete.response.ok)
   @ApiNotFoundResponse(UserSwagger.delete.response.notFound)
   @ApiUnauthorizedResponse(UnauthorizedResponse)

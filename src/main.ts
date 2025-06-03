@@ -8,8 +8,10 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
-    .setTitle('API - Ecommerce')
-    .setDescription('API para um e-commerce')
+    .setTitle('Larê - API')
+    .setDescription(
+      'API criada para o e-commerce Larê com NestJS. Ela fornece rotas para gerenciar produtos, usuários, carrinhos e pedidos.',
+    )
     .setVersion('1.0')
     .addBearerAuth({
       type: 'http',

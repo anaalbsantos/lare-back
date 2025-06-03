@@ -21,6 +21,10 @@ export const UnauthorizedResponse = {
 
 export const UserSwagger = {
   create: {
+    operation: {
+      summary: 'Create a new user',
+      description: 'Create a new user. This route is public.',
+    },
     body: {
       type: User,
     },
@@ -31,11 +35,17 @@ export const UserSwagger = {
       },
     },
     badRequest: {
-      description: 'Email already in use',
+      description: 'Email already in use or password is not strong enough',
       schema: {
         type: 'object',
         example: {
-          message: 'Email already in use',
+          message: [
+            'Email already in use',
+            'Invalid email',
+            'Password must be a string',
+            'Password must be at least 8 characters long',
+            'Password must contain at least 1 number and 1 symbol',
+          ],
           error: 'Bad Request',
           statusCode: 400,
         },
@@ -43,6 +53,10 @@ export const UserSwagger = {
     },
   },
   findAll: {
+    operation: {
+      summary: 'Find all users',
+      description: 'Find all users. Only admins can find all users.',
+    },
     response: {
       ok: {
         description: 'Users found successfully!',
@@ -55,6 +69,11 @@ export const UserSwagger = {
     },
   },
   findById: {
+    operation: {
+      summary: 'Find a user by id',
+      description:
+        'Find a user by id. You must be logged in to access this route.',
+    },
     response: {
       ok: {
         description: 'User found successfully!',
@@ -66,6 +85,10 @@ export const UserSwagger = {
     },
   },
   update: {
+    operation: {
+      summary: 'Update a user',
+      description: 'Update a user. You must be logged in to access this route.',
+    },
     body: {
       type: UpdateUser,
       examples: {
@@ -91,6 +114,10 @@ export const UserSwagger = {
     },
   },
   delete: {
+    operation: {
+      summary: 'Delete a user',
+      description: 'Delete a user. You must be logged in to access this route.',
+    },
     response: {
       ok: {
         description: 'User deleted successfully!',
@@ -105,6 +132,11 @@ export const UserSwagger = {
 
 export const CartSwagger = {
   findCart: {
+    operation: {
+      summary: 'Find a cart by user id',
+      description:
+        'Find a cart by user id. You must be logged in to access this route.',
+    },
     response: {
       ok: {
         description: 'Cart found successfully!',
@@ -137,9 +169,14 @@ export const CartSwagger = {
     },
   },
   addProductToCart: {
+    operation: {
+      summary: 'Add a product to a cart',
+      description:
+        'Add a product to a cart. You must be logged in to access this route.',
+    },
     body: {
       type: CartItem,
-      example: {
+      examples: {
         ex1: {
           value: {
             quantity: 1,
@@ -151,7 +188,18 @@ export const CartSwagger = {
     response: {
       ok: {
         description: 'Product added to cart',
-        type: Cart,
+        schema: {
+          type: 'object',
+          example: {
+            message: 'Product added to cart',
+            cartItem: {
+              id: '123e4567-e89b-12d3-a456-426614174000',
+              productId: '123e4567-e89b-12d3-a456-426614174000',
+              quantity: 1,
+              cartId: '123e4567-e89b-12d3-a456-426614174000',
+            },
+          },
+        },
       },
       notFound: {
         description: 'Product or user or cart not found',
@@ -165,6 +213,11 @@ export const CartSwagger = {
     },
   },
   removeProductFromCart: {
+    operation: {
+      summary: 'Remove a product from a cart',
+      description:
+        'Remove a product from a cart. You must be logged in to access this route.',
+    },
     response: {
       ok: {
         description: 'Product removed from cart',
@@ -182,10 +235,20 @@ export const CartSwagger = {
     },
   },
   checkout: {
+    operation: {
+      summary: 'Checkout a cart',
+      description:
+        'Checkout a cart. You must be logged in to access this route.',
+    },
     response: {
       ok: {
         description: 'Cart checked out',
-        type: Cart,
+        schema: {
+          type: 'object',
+          example: {
+            message: 'Cart checked out',
+          },
+        },
       },
       notFound: {
         description: 'Cart not found',
@@ -199,6 +262,10 @@ export const CartSwagger = {
 
 export const ProductSwagger = {
   create: {
+    operation: {
+      summary: 'Create a new product',
+      description: 'Create a new product. Only admins can create products.',
+    },
     body: {
       type: Product,
     },
@@ -207,9 +274,35 @@ export const ProductSwagger = {
         description: 'Product created successfully!',
         type: Product,
       },
+      badRequest: {
+        description: 'Product properties are not valid',
+        schema: {
+          type: 'object',
+          example: {
+            message: [
+              'Title is required',
+              'Title must be a string',
+              'Title must be less or equal to 50 characters',
+              'Description must be a string',
+              'Description must be less or equal to 500 characters',
+              'Price is required',
+              'Price must be a number',
+              'Price must be greater than 0',
+              'Stock must be a number',
+              'Stock must be greater than 0',
+            ],
+            error: 'Bad Request',
+            statusCode: 400,
+          },
+        },
+      },
     },
   },
   findAll: {
+    operation: {
+      summary: 'Find all products',
+      description: 'Find all products. This route is public.',
+    },
     response: {
       ok: {
         description: 'Products found successfully!',
@@ -222,6 +315,10 @@ export const ProductSwagger = {
     },
   },
   findById: {
+    operation: {
+      summary: 'Find a product by id',
+      description: 'Find a product by id. This route is public.',
+    },
     response: {
       ok: {
         description: 'Product found successfully!',
@@ -233,6 +330,10 @@ export const ProductSwagger = {
     },
   },
   update: {
+    operation: {
+      summary: 'Update a product',
+      description: 'Update a product. Only admins can update products.',
+    },
     body: {
       type: UpdateProduct,
       examples: {
@@ -272,6 +373,10 @@ export const ProductSwagger = {
     },
   },
   delete: {
+    operation: {
+      summary: 'Delete a product',
+      description: 'Delete a product. Only admins can delete products.',
+    },
     response: {
       ok: {
         description: 'Product deleted successfully!',
