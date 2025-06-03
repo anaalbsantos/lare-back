@@ -47,7 +47,13 @@ Para conseguir rodar o projeto, certifique-se de que possui instalado o gerencia
 $ pnpm install
 ```
 
-## 2. Inicie a aplicação
+### 2. Gere o banco do Prisma:
+
+```bash
+$ pnpm prisma generate
+```
+
+### 3. Inicie a aplicação:
 
 ```bash
 $ pnpm run start
