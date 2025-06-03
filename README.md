@@ -47,13 +47,20 @@ Para conseguir rodar o projeto, certifique-se de que possui instalado o gerencia
 $ pnpm install
 ```
 
-### 2. Gere o banco do Prisma:
+### 2. Crie um arquivo `.env` e configure as variáveis de ambiente:
 
 ```bash
-$ pnpm prisma generate
+ DATABASE_URL="file:./dev.db"
+ JWT_SECRET="ipjpi23!89n36o10s@diqu&iue~6aow#lqwknwq727ef3x=awd2x/yuyskwjlwedle="
 ```
 
-### 3. Inicie a aplicação:
+### 3. Gere o banco do Prisma:
+
+```bash
+$ pnpm prisma migrate dev
+```
+
+### 4. Inicie a aplicação:
 
 ```bash
 $ pnpm run start
